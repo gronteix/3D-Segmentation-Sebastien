@@ -155,6 +155,13 @@ class spheroid:
         a = df['Orange'].dot(df['Green'])/df['Orange'].dot(df['Orange'])
         df['Color'] = np.sign(df['Green']-a*df['Orange'])
 
+        X = df1[['Orange', 'Green']]
+        km = KMeans(n_clusters=2)
+        km.fit(X)
+        km.predict(X)
+        labels = km.labels_
+        df['GMM Color'] = labels*2-1
+
         for cellLabel in self.Spheroid['cells'].keys():
 
             # Test dimension order to verify coherence
