@@ -45,12 +45,12 @@ class spheroid:
         self.DCells = dCells
         self.NucImage = []
         self.BorderCrop = 0 # pixels cropped on border
-        self.ThreshOrange = 2500 # thresh for orange cell detection
-        self.ThreshGreen = 400 # thresh for orange cell detection
-        self.ThreshCell = 120 # thresh for live cell detection
-        self.Percentile = 50 # you dump pixels below this relative threshold
-
-        print(self.RNoyau)
+        self.ThreshOrange = 300 # thresh for orange cell detection, not used since
+                                # classifier introduced.
+        self.ThreshGreen = 200  # thresh for orange cell detection, not used
+                                # since classifier introduced
+        self.ThreshCell = 7   # thresh for live cell detection
+        self.Percentile = 20 # you dump pixels below this relative threshold
 
 
     def _loadImage(self, channel, type):

@@ -14,7 +14,7 @@ def default(o):
 
 def _sortFiles(path):
 
-    print('Please verify that the filename order is $xy$ then $z$ then $t$')
+    print('Please verify that the filename order is $t$ then $xy$ then $z$')
 
     for file in tqdm(os.listdir(path)):
 
@@ -33,9 +33,9 @@ def _sortFiles(path):
 
                 elif 't' in fileName:
 
-                    _, position = fileName.split('xy')
-                    position, time = position.split('z')
-                    _, time = time.split('t')
+                    _, time = fileName.split('t')
+                    time, position = time.split('xy')
+                    position, z = position.split('z')
 
 
                 if not os.path.exists(path + r'\\' + position):
