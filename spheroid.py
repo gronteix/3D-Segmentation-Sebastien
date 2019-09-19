@@ -75,15 +75,21 @@ class spheroid:
 
         if type == 'NucImage':
 
-            self.NucImage = image_list
+            self.NucImage = np.asarray(image_list)
+
+            print('Nuc Image Mean: ' + str(self.NucImage.mean()))
 
         if type == 'GreenImage':
 
-            self.OrangeImage = image_list
+            self.GreenImage = np.asarray(image_list)
+
+            print('Green Image Mean: ' + str(self.GreenImage.mean()))
 
         if type == 'OrangeImage':
 
-            self.GreenImage = image_list
+            self.OrangeImage = np.asarray(image_list)
+
+            print('Orange Image Mean: ' + str(self.OrangeImage.mean()))
 
     def _getNuclei(self):
 
