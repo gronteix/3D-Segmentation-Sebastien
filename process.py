@@ -91,6 +91,9 @@ def _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
 
     if len(channels) == 3:
 
+        if not os.path.exists(path + r'\Spheroids'):
+            os.mkdir(path + r'\\' + 'Spheroids')
+
         df = Sph._initializeStates()
         df.to_csv(path + r'\\' + 'Spheroids' +
             '\\intensityFrame_' + spheroidFolder + r'_' +  timeFolder + '.csv')

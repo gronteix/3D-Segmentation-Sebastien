@@ -49,7 +49,7 @@ class spheroid:
                                 # classifier introduced.
         self.ThreshGreen = 200  # thresh for orange cell detection, not used
                                 # since classifier introduced
-        self.ThreshCell = 7   # thresh for live cell detection
+        self.ThreshCell = 600   # thresh for live cell detection
         self.Percentile = 20 # you dump pixels below this relative threshold
 
 
@@ -77,19 +77,13 @@ class spheroid:
 
             self.NucImage = np.asarray(image_list)
 
-            print('Nuc Image Mean: ' + str(self.NucImage.mean()))
-
         if type == 'GreenImage':
 
             self.GreenImage = np.asarray(image_list)
 
-            print('Green Image Mean: ' + str(self.GreenImage.mean()))
-
         if type == 'OrangeImage':
 
             self.OrangeImage = np.asarray(image_list)
-
-            print('Orange Image Mean: ' + str(self.OrangeImage.mean()))
 
     def _getNuclei(self):
 
@@ -181,8 +175,13 @@ class spheroid:
 
         print(np.shape(blurred))
 
-        mask = (blurred > np.percentile(blurred, self.Percentile)).astype(np.float)
-        mask += 0.1
+        sigma = blurred.std()
+        mean = blurred.mean()
+
+        #mask = (blurred > np.percentile(blurred, self.Percentile)).astype(np.float)
+        #mask += 0.1
+
+        mask = (blurred > mean + sigma).astype(np.float)
 
         binary_img = mask > 0.5
         binary_img = skimage.morphology.binary_closing(ndimage.binary_dilation(
@@ -246,7 +245,7 @@ class spheroid:
 
         stop = timeit.default_timer()
 
-        print('Corrdinates ID Time: ', stop - start)
+        print('Coordinates ID Time: ', stop - start)
         print(str(len(coordinates)) + ' cells ID')
 
         a, b = np.shape(coordinates)
