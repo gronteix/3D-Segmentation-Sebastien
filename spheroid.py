@@ -165,11 +165,11 @@ class spheroid:
 
             # Test dimension order to verify coherence
 
-            if df.loc[df['label'] == cellLabel, 'Color'].iloc[0] < 0:
+            if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] < 0:
 
                 self.Spheroid['cells'][cellLabel]['state'] = 'Orange'
 
-            if df.loc[df['label'] == cellLabel, 'Color'].iloc[0] > 0:
+            if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] > 0:
 
                 self.Spheroid['cells'][cellLabel]['state'] = 'Green'
 
