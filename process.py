@@ -91,24 +91,24 @@ def _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
 
         Sph._refineSph() # creation of dict object
 
-    except: print('No graph could be generated')
+        if len(channels) == 3:
 
-    if len(channels) == 3:
+            if not os.path.exists(path + r'\Spheroids'):
+                os.mkdir(path + r'\\' + 'Spheroids')
 
-        if not os.path.exists(path + r'\Spheroids'):
+            df = Sph._initializeStates()
+            df.to_csv(path + r'\\' + 'Spheroids' +
+                '\\intensityFrame_' + spheroidFolder + r'_' +  timeFolder + '.csv')
+
+        if not os.path.exists(path + r'\\' + 'Spheroids'):
             os.mkdir(path + r'\\' + 'Spheroids')
 
-        df = Sph._initializeStates()
-        df.to_csv(path + r'\\' + 'Spheroids' +
-            '\\intensityFrame_' + spheroidFolder + r'_' +  timeFolder + '.csv')
+        _saveSpheroid(Sph.Spheroid, path + r'\\' + 'Spheroids' +
+            '\\spheroid_' + spheroidFolder + r'_' +  timeFolder + '.json')
 
-    if not os.path.exists(path + r'\\' + 'Spheroids'):
-        os.mkdir(path + r'\\' + 'Spheroids')
+        Sph._verifySegmentation()
 
-    _saveSpheroid(Sph.Spheroid, path + r'\\' + 'Spheroids' +
-        '\\spheroid_' + spheroidFolder + r'_' +  timeFolder + '.json')
-
-    Sph._verifySegmentation()
+    except: print('No graph could be generated')
 
 def _makeSpheroidClass(path, zRatio, rNoyau, dCells, channels):
 
