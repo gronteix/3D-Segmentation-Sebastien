@@ -178,9 +178,6 @@ class spheroid:
     def _getMaskImage(self):
 
         blurred = ndimage.gaussian_filter(self.NucImage, sigma=1)
-
-        print(np.shape(blurred))
-
         sigma = blurred.std()
         mean = blurred.mean()
 
@@ -242,7 +239,7 @@ class spheroid:
         # On prend exprès 10% de marge supplémentaire pour éviter les contacts inopportuns.
         # On fait aussi attention au liveau minimal d'intensite des pics.
 
-        r = int(self.RNoyau*self.ZRatio)
+        r = int(self.RNoyau)
 
         start = timeit.default_timer()
 
