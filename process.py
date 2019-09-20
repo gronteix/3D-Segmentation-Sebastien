@@ -116,7 +116,7 @@ def _makeSpheroidClass(path, zRatio, rNoyau, dCells, channels):
 
     for spheroidFolder in tqdm(os.listdir(path)):
 
-        spheroidPath = path + '/' + spheroidFolder
+        spheroidPath = path + r'\\' + spheroidFolder
 
         if os.path.isdir(spheroidPath):
 
