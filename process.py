@@ -87,7 +87,11 @@ def _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
 
     print('refine the analysis over the spheroid')
 
-    Sph._refineSph() # creation of dict object
+    try:
+
+        Sph._refineSph() # creation of dict object
+
+    except: print('No graph could be generated')
 
     if len(channels) == 3:
 
