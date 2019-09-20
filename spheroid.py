@@ -124,15 +124,15 @@ class spheroid:
 
     def _initializeStates(self):
 
-        X = np.arange(0, 40)
-        Y = np.arange(0, 40)
-        Z = np.arange(0, 40)
+        X = np.arange(0, 100)
+        Y = np.arange(0, 100)
+        Z = np.arange(0, 100)
         X, Y, Z = np.meshgrid(X, Y, Z)
 
         df = pandas.DataFrame()
         i = 0
 
-        mask = np.sqrt((X-20)**2 + (Y-20)**2 + (Z-20)**2/self.ZRatio**2) < self.RNoyau
+        mask = np.sqrt((X-50)**2 + (Y-50)**2 + (Z-50)**2/self.ZRatio**2) < 3*self.RNoyau
         mask = np.transpose(mask, (2,1,0)).astype(np.int)
 
         GreenConv = scipy.signal.fftconvolve(self.GreenImage, mask, mode='same')
