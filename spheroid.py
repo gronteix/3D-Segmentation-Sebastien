@@ -50,9 +50,7 @@ class spheroid:
                                 # classifier introduced.
         self.ThreshGreen = 200  # thresh for orange cell detection, not used
                                 # since classifier introduced
-        self.ThreshCell = 600   # thresh for live cell detection
-        self.Percentile = 20 # you dump pixels below this relative threshold
-
+        self.ThreshCell = 550   # thresh for live cell detection
 
     def _loadImage(self, channel, type):
 
@@ -184,7 +182,7 @@ class spheroid:
         #mask = (blurred > np.percentile(blurred, self.Percentile)).astype(np.float)
         #mask += 0.1
 
-        mask = (blurred > mean + sigma).astype(np.float)
+        mask = (blurred > mean + 0.5*sigma).astype(np.float)
 
         binary_img = mask > 0.5
         binary_img = skimage.morphology.binary_closing(ndimage.binary_dilation(
