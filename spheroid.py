@@ -101,7 +101,7 @@ class spheroid:
                             preprocess=True, max_iterations=10, filter_before=None, filter_after=None, characterize=True,
                             engine='numba')
 
-        self.NucFrame['label'] = range(len(fd))
+        self.NucFrame['label'] = range(len(self.NucFrame))
 
 
     def _makeSpheroid(self):
@@ -144,21 +144,10 @@ class spheroid:
         mask = np.sqrt((X-50)**2/x**2 + (Y-50)**2/y**2 + (Z-50)**2/z**2) < 1
         mask = np.transpose(mask, (2,1,0)).astype(np.int)
 
-        xmin = int(self.NucFrame['x'].min())
-        xmax = int(self.NucFrame['x'].max())
-        ymin = int(self.NucFrame['y'].min())
-        ymax = int(self.NucFrame['y'].max())
-        zmin = int(self.NucFrame['z'].min())
-        zmax = int(self.NucFrame['z'].max())
+        GreenConv = scipy.signal.fftconvolve(self.GreenImage, mask, mode='full')
+        OrangeConv = scipy.signal.fftconvolve(self.OrangeImage, mask, mode='full')
 
-        (Zshape, Xshape, Yshape) = np.shape(self.GreenImage)
-
-        GreenConv = scipy.signal.fftconvolve(self.GreenImage[max(0,zmin-10):min(zmax+10, Zshape), max(0,xmin-50):min(xmax+50, Xshape),
-                                                             max(0,ymin-50):min(ymax+50, Yshape)], mask, mode='full')
-        OrangeConv = scipy.signal.fftconvolve(self.OrangeImage[max(0,zmin-10):min(zmax+10, Zshape), max(0,xmin-50):min(xmax+50, Xshape),
-                                                             max(0,ymin-50):min(ymax+50, Yshape)], mask, mode='full')
-
-        for cellLabel in tqdm(self.Spheroid['cells'].keys()):
+        for cellLabel in self.Spheroid['cells'].keys():
 
             try:
 
@@ -185,7 +174,11 @@ class spheroid:
         labels = gmm.predict(X)
         df['GMM Color'] = labels*2-1
 
+        print(self.Spheroid['cells'].keys())
+
         for cellLabel in self.Spheroid['cells'].keys():
+
+            print(cellLabel)
 
             # Error can come from thrown out cells from above that are non existent
             # here...
@@ -289,11 +282,6 @@ class spheroid:
             self.Spheroid['cells'][v]['degree'] = C[v]
             self.Spheroid['cells'][v]['clustering'] = B[v]
             self.Spheroid['cells'][v]['centrality'] = A[v]
-
-        self.Spheroid['N'] = len(self.Spheroid['cells'])
-        self.Spheroid['assortativity'] = nx.degree_assortativity_coefficient(G)
-        self.Spheroid['average degree'] = np.asarray([float(C[v]) for v in G]).mean()
-
 
     def _verifySegmentation(self):
 
