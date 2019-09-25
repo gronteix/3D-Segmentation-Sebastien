@@ -49,6 +49,7 @@ class spheroid:
         self.DCells = dCells
         self.NucImage = []
         self.BorderCrop = 0 # pixels cropped on border
+        self.MinMass = 80000 # to check for different images
         self.ThreshOrange = 300 # thresh for orange cell detection, not used since
                                 # classifier introduced.
         self.ThreshGreen = 200  # thresh for orange cell detection, not used
@@ -95,7 +96,7 @@ class spheroid:
         makes it impossible for any cell to be segmented twice along the z-axis.
         """
 
-        self.NucFrame = trackpy.locate(Sph.NucImage[:, :,:], self.RNoyau, minmass=self.MinMass, maxsize=None, separation=self.DCells,
+        self.NucFrame = trackpy.locate(self.NucImage[:, :,:], self.RNoyau, minmass=self.MinMass, maxsize=None, separation=self.DCells,
                             noise_size=2, smoothing_size=None, threshold=None, invert=False, percentile=64, topn=None,
                             preprocess=True, max_iterations=10, filter_before=None, filter_after=None, characterize=True,
                             engine='numba')
@@ -143,12 +144,12 @@ class spheroid:
         mask = np.sqrt((X-50)**2/x**2 + (Y-50)**2/y**2 + (Z-50)**2/z**2) < 1
         mask = np.transpose(mask, (2,1,0)).astype(np.int)
 
-        xmin = int(Sph.NucFrame['x'].min())
-        xmax = int(Sph.NucFrame['x'].max())
-        ymin = int(Sph.NucFrame['y'].min())
-        ymax = int(Sph.NucFrame['y'].max())
-        zmin = int(Sph.NucFrame['z'].min())
-        zmax = int(Sph.NucFrame['z'].max())
+        xmin = int(self.NucFrame['x'].min())
+        xmax = int(self.NucFrame['x'].max())
+        ymin = int(self.NucFrame['y'].min())
+        ymax = int(self.NucFrame['y'].max())
+        zmin = int(self.NucFrame['z'].min())
+        zmax = int(self.NucFrame['z'].max())
 
         (Zshape, Xshape, Yshape) = np.shape(self.GreenImage)
 
