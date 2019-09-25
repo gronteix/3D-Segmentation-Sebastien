@@ -18,6 +18,7 @@ from matplotlib_scalebar.scalebar import ScaleBar
 import networkx as nx
 from sklearn import mixture
 
+import trackpy
 
 class spheroid:
 
