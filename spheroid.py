@@ -17,6 +17,7 @@ import json
 from matplotlib_scalebar.scalebar import ScaleBar
 import networkx as nx
 from sklearn import mixture
+from scipy.ndimage import gaussian_filter
 
 import trackpy
 
@@ -48,8 +49,9 @@ class spheroid:
         self.RNoyau = rNoyau
         self.DCells = dCells
         self.NucImage = []
+        self.NucFrame = pandas.DataFrame()
         self.BorderCrop = 0 # pixels cropped on border
-        self.MinMass = 80000 # to check for different images
+        self.MinMass = 40000 # to check for different images
         self.ThreshOrange = 300 # thresh for orange cell detection, not used since
                                 # classifier introduced.
         self.ThreshGreen = 200  # thresh for orange cell detection, not used
@@ -96,12 +98,16 @@ class spheroid:
         makes it impossible for any cell to be segmented twice along the z-axis.
         """
 
-        self.NucFrame = trackpy.locate(self.NucImage[:, :,:], self.RNoyau, minmass=self.MinMass, maxsize=None, separation=self.DCells,
+        df = trackpy.locate(self.NucImage[:, :,:], self.RNoyau, minmass=self.MinMass, maxsize=None, separation=self.DCells,
                             noise_size=2, smoothing_size=None, threshold=None, invert=False, percentile=64, topn=None,
                             preprocess=True, max_iterations=10, filter_before=None, filter_after=None, characterize=True,
                             engine='numba')
 
-        self.NucFrame['label'] = range(len(self.NucFrame))
+        df = df.loc[df['mass'] > 50000]
+        df['label'] = range(len(df))
+
+        self.NucFrame = df
+
 
 
     def _makeSpheroid(self):
@@ -174,11 +180,7 @@ class spheroid:
         labels = gmm.predict(X)
         df['GMM Color'] = labels*2-1
 
-        print(self.Spheroid['cells'].keys())
-
         for cellLabel in self.Spheroid['cells'].keys():
-
-            print(cellLabel)
 
             # Error can come from thrown out cells from above that are non existent
             # here...
@@ -246,10 +248,12 @@ class spheroid:
         y = df.loc[df['label'] == label, 'y'].iloc[0]
         z = df.loc[df['label'] == label, 'z'].iloc[0]
 
+        (a,b,c) = dCells
+
         lf = df.loc[df['label'] != label].copy()
 
-        return lf.loc[np.sqrt((lf['x'] - x)**2 + (lf['y'] - y)**2 +
-            (lf['z'] - z)**2/zRatio**2) < dCells, 'label'].values.tolist()
+        return lf.loc[np.sqrt((lf['x'] - x)**2/b**2 + (lf['y'] - y)**2/c**2 +
+            (lf['z'] - z)**2/a**2) < 1, 'label'].values.tolist()
 
 
     def _makeG(self):
@@ -285,6 +289,8 @@ class spheroid:
 
     def _verifySegmentation(self):
 
+        from skimage import exposure
+
         if not len(self.NucFrame):
             return print('Image doesnt exist')
 
@@ -293,7 +299,8 @@ class spheroid:
 
         zshape, _, _ = np.shape(self.NucImage)
 
-        ImageAll = self.NucImage
+        img_eq = exposure.equalize_hist(self.NucImage)
+        ImageAll =  gaussian_filter(img_eq, sigma=2)
 
         for n in range(zshape):
 
@@ -312,9 +319,9 @@ class spheroid:
 
             for cellLabel in self.Spheroid['cells'].keys():
 
-                x = int(self.Spheroid['cells'][cellLabel]['x'])
-                y = int(self.Spheroid['cells'][cellLabel]['y'])
-                z = int(self.Spheroid['cells'][cellLabel]['z'])
+                x = int(float(self.Spheroid['cells'][cellLabel]['x']))
+                y = int(float(self.Spheroid['cells'][cellLabel]['y']))
+                z = int(float(self.Spheroid['cells'][cellLabel]['z']))
 
                 if (r**2 - (z -n)**2/self.ZRatio**2) > 0:
 
