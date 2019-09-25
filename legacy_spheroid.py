@@ -17,6 +17,7 @@ import json
 from matplotlib_scalebar.scalebar import ScaleBar
 import networkx as nx
 from sklearn import mixture
+import timeit
 
 
 class spheroid:
@@ -36,9 +37,6 @@ class spheroid:
     time: string object, time of experiment"""
 
     def __init__(self, path, position, time, zRatio, rNoyau, dCells):
-
-        position = '0'
-        time = '0'
 
         self.Path = path
         self.Position = position
@@ -94,12 +92,7 @@ class spheroid:
         makes it impossible for any cell to be segmented twice along the z-axis.
         """
 
-        self.NucFrame = trackpy.locate(Sph.NucImage[:, :,:], self.RNoyau, minmass=self.MinMass, maxsize=None, separation=self.DCells,
-                            noise_size=2, smoothing_size=None, threshold=None, invert=False, percentile=64, topn=None,
-                            preprocess=True, max_iterations=10, filter_before=None, filter_after=None, characterize=True,
-                            engine='numba')
-
-        self.NucFrame['label'] = range(len(fd))
+        self._getMaximaFrame(self._getMaskImage(), self.ZRatio, self.RNoyau)
 
 
     def _makeSpheroid(self):
@@ -137,41 +130,24 @@ class spheroid:
         df = pandas.DataFrame()
         i = 0
 
-        (z, x, y) = self.RNoyau
-
-        mask = np.sqrt((X-50)**2/x**2 + (Y-50)**2/y**2 + (Z-50)**2/z**2) < 1
+        mask = np.sqrt((X-50)**2 + (Y-50)**2 + (Z-50)**2/self.ZRatio**2) < 2*self.RNoyau
         mask = np.transpose(mask, (2,1,0)).astype(np.int)
 
-        xmin = int(Sph.NucFrame['x'].min())
-        xmax = int(Sph.NucFrame['x'].max())
-        ymin = int(Sph.NucFrame['y'].min())
-        ymax = int(Sph.NucFrame['y'].max())
-        zmin = int(Sph.NucFrame['z'].min())
-        zmax = int(Sph.NucFrame['z'].max())
+        GreenConv = scipy.signal.fftconvolve(self.GreenImage, mask, mode='same')
+        OrangeConv = scipy.signal.fftconvolve(self.OrangeImage, mask, mode='same')
 
-        (Zshape, Xshape, Yshape) = np.shape(self.GreenImage)
+        for cellLabel in self.Spheroid['cells'].keys():
 
-        GreenConv = scipy.signal.fftconvolve(self.GreenImage[max(0,zmin-10):min(zmax+10, Zshape), max(0,xmin-50):min(xmax+50, Xshape),
-                                                             max(0,ymin-50):min(ymax+50, Yshape)], mask, mode='full')
-        OrangeConv = scipy.signal.fftconvolve(self.OrangeImage[max(0,zmin-10):min(zmax+10, Zshape), max(0,xmin-50):min(xmax+50, Xshape),
-                                                             max(0,ymin-50):min(ymax+50, Yshape)], mask, mode='full')
+            x = int(self.Spheroid['cells'][cellLabel]['x'])
+            y = int(self.Spheroid['cells'][cellLabel]['y'])
+            z = int(self.Spheroid['cells'][cellLabel]['z'])
 
-        for cellLabel in tqdm(self.Spheroid['cells'].keys()):
+            zlen, _, _ = np.nonzero(mask)
 
-            try:
-
-                x = int(float(self.Spheroid['cells'][cellLabel]['x']))
-                y = int(float(self.Spheroid['cells'][cellLabel]['y']))
-                z = int(float(self.Spheroid['cells'][cellLabel]['z']))
-
-                zlen, _, _ = np.nonzero(mask)
-
-                df.loc[i, 'label'] = cellLabel
-                df.loc[i, 'Orange'] = OrangeConv[z,x,y]/len(zlen)
-                df.loc[i, 'Green'] = GreenConv[z,x,y]/len(zlen)
-                i += 1
-
-            except Exception as e: print('Error in cell ' + str(cellLabel), e)
+            df.loc[i, 'label'] = cellLabel
+            df.loc[i, 'Orange'] = OrangeConv[z,x,y]/len(zlen)
+            df.loc[i, 'Green'] = GreenConv[z,x,y]/len(zlen)
+            i += 1
 
         # We experimentally classify the cells spheroid by spheroid
 
@@ -185,23 +161,101 @@ class spheroid:
 
         for cellLabel in self.Spheroid['cells'].keys():
 
-            # Error can come from thrown out cells from above that are non existent
-            # here...
+            # Test dimension order to verify coherence
 
-            try:
+            if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] < 0:
 
-                if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] < 0:
+                self.Spheroid['cells'][cellLabel]['state'] = 'Orange'
 
-                    self.Spheroid['cells'][cellLabel]['state'] = 'Orange'
+            if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] > 0:
 
-                if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] > 0:
-
-                    self.Spheroid['cells'][cellLabel]['state'] = 'Green'
-
-            except Exception as e: print('Error in cell ' + str(cellLabel), e)
+                self.Spheroid['cells'][cellLabel]['state'] = 'Green'
 
         return df
 
+    def _getMaskImage(self):
+
+        blurred = ndimage.gaussian_filter(self.NucImage, sigma=1)
+        sigma = blurred.std()
+        mean = blurred.mean()
+
+        #mask = (blurred > np.percentile(blurred, self.Percentile)).astype(np.float)
+        #mask += 0.1
+
+        mask = (blurred > mean + 0.5*sigma).astype(np.float)
+
+        binary_img = mask > 0.5
+        binary_img = skimage.morphology.binary_closing(ndimage.binary_dilation(
+            ndimage.binary_erosion(binary_img)).astype(np.int))
+
+        return np.multiply(blurred, binary_img)
+
+    def _getMaximaFrame(self, Image, zRatio, rNoyau):
+
+        """Generates the spheroid dict containing all the essential information about the spheroid.
+
+        ====== PARAMETERS ======
+
+        Image: original, multichannel, 3D image
+        zRatio: pixel ratio between z and xy dimensions
+        rNoyau: radius of the prior (i.e. expected radius of the nuclei)
+
+        ====== RETURNS ======
+
+        _Spheroid: dict object"""
+
+        z, x, y = np.nonzero(Image)
+        binary_img = Image > 0 # Regarder si le seuil est le bon ou pas
+
+        mask_image_crop = Image[min(z):max(z), min(x):max(x), min(y):max(y)]
+
+        # Making of the convolution mask
+
+        X = np.arange(0, 40)
+        Y = np.arange(0, 40)
+        Z = np.arange(0, 40)
+        X, Y, Z = np.meshgrid(X, Y, Z)
+
+        mask = np.sqrt((X-20)**2 + (Y-20)**2 + (Z-20)**2/zRatio**2) < rNoyau
+        mask = np.transpose(mask, (2,1,0))
+        zlen, _, _ = np.nonzero(mask)
+
+        start = timeit.default_timer()
+
+        # We divide by len(zlen) so has to have the average value over the mask
+
+        conv = scipy.signal.fftconvolve(ndimage.gaussian_filter(self.NucImage, sigma=1),
+            mask/len(zlen), mode='same')
+
+        mask_conv = ndimage.gaussian_filter(np.multiply(conv, binary_img), sigma=1)
+
+        stop = timeit.default_timer()
+
+        print('Convolution Time: ', stop - start)
+
+        # Distance minimum entre deux noyaux repérés par l'algorithme de convolution
+        # On prend exprès 10% de marge supplémentaire pour éviter les contacts inopportuns.
+        # On fait aussi attention au liveau minimal d'intensite des pics.
+
+        r = int(self.RNoyau)
+
+        start = timeit.default_timer()
+
+        coordinates = np.asarray(skimage.feature.peak_local_max(mask_conv, min_distance = r,
+            threshold_abs = self.ThreshCell))
+
+        stop = timeit.default_timer()
+
+        print('Coordinates ID Time: ', stop - start)
+        print(str(len(coordinates)) + ' cells ID')
+
+        a, b = np.shape(coordinates)
+
+        coordinates = np.hstack((coordinates, np.asarray([np.arange(a)]).T))
+
+        df = pandas.DataFrame(coordinates, columns = ['z', 'x', 'y', 'label'])
+
+        self.NucFrame = df
 
     def _generateCells(self):
 
@@ -256,7 +310,6 @@ class spheroid:
         return lf.loc[np.sqrt((lf['x'] - x)**2 + (lf['y'] - y)**2 +
             (lf['z'] - z)**2/zRatio**2) < dCells, 'label'].values.tolist()
 
-
     def _makeG(self):
 
         G=nx.Graph()
@@ -272,7 +325,6 @@ class spheroid:
                 G.add_edge(key, node)
 
         return G
-
 
     def _refineSph(self):
 
