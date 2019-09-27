@@ -311,7 +311,7 @@ class spheroid:
 
             plt.figure(figsize=(12, 12))
             plt.subplot(111)
-            plt.imshow(Image, vmin=0, vmax=1300, cmap=plt.cm.gray)
+            plt.imshow(Image, cmap=plt.cm.gray)
             plt.axis('off')
 
             #scalebar = ScaleBar(0.0000003, location = 'lower right')
