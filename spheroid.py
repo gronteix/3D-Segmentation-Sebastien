@@ -249,6 +249,9 @@ class spheroid:
         z = df.loc[df['label'] == label, 'z'].iloc[0]
 
         (a,b,c) = dCells
+        a *= 3
+        b *= 3
+        c *= 3
 
         lf = df.loc[df['label'] != label].copy()
 
