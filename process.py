@@ -85,6 +85,9 @@ def _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
 
     Sph._makeSpheroid() # creation of dict object
 
+    Sph.NucFrame.to_csv(path + r'\\' + 'Spheroids' +
+        '\\SpheroidFrame_' + spheroidFolder + r'_' +  timeFolder + '.csv')
+
     print('refine the analysis over the spheroid')
 
     Sph._refineSph() # creation of dict object

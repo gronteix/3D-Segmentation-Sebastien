@@ -103,7 +103,7 @@ class spheroid:
                             preprocess=True, max_iterations=10, filter_before=None, filter_after=None, characterize=True,
                             engine='numba')
 
-        df = df.loc[df['mass'] > 50000]
+        df = df.loc[df['mass'] > 20000]
         df['label'] = range(len(df))
 
         self.NucFrame = df
@@ -315,7 +315,7 @@ class spheroid:
             # 1 pixel = 0.3 um
             #plt.gca().add_artist(scalebar)
 
-            r = self.RNoyau
+            (r,_,_) = self.RNoyau
 
             for cellLabel in self.Spheroid['cells'].keys():
 
