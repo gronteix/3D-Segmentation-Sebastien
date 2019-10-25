@@ -51,7 +51,7 @@ class spheroid:
         self.NucImage = []
         self.NucFrame = pandas.DataFrame()
         self.BorderCrop = 0 # pixels cropped on border
-        self.MinMass = 40000 # to check for different images
+        self.MinMass = 120000 # to check for different images
         self.ThreshOrange = 300 # thresh for orange cell detection, not used since
                                 # classifier introduced.
         self.ThreshGreen = 200  # thresh for orange cell detection, not used
@@ -318,7 +318,7 @@ class spheroid:
             # 1 pixel = 0.3 um
             #plt.gca().add_artist(scalebar)
 
-            (r,_,_) = self.RNoyau
+            (_,r,_) = self.RNoyau
 
             for cellLabel in self.Spheroid['cells'].keys():
 
