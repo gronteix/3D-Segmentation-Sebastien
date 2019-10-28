@@ -29,6 +29,8 @@ class spheroid:
 
      - All variables starting with a capital letter refer to class variables.
      - All variables starting with '_' refer to a dict
+     - All distances and sizes are 'real-world', the pxtoum serves to convert
+        them to px
 
 
     ====== PARAMETERS ======
@@ -37,7 +39,7 @@ class spheroid:
     position: string object, well ID
     time: string object, time of experiment"""
 
-    def __init__(self, path, position, time, zRatio, rNoyau, dCells):
+    def __init__(self, path, position, time, zRatio, rNoyau, dCells, pxtoum):
 
         position = '0'
         time = '0'
@@ -46,8 +48,9 @@ class spheroid:
         self.Position = position
         self.Time = time
         self.ZRatio = zRatio
-        self.RNoyau = rNoyau
-        self.DCells = dCells
+        self.RNoyau = rNoyau/pxtoum
+        self.DCells = dCells/pxtoum
+        self.Pxtoum = pxtoum
         self.NucImage = []
         self.NucFrame = pandas.DataFrame()
         self.BorderCrop = 0 # pixels cropped on border
@@ -137,9 +140,13 @@ class spheroid:
 
     def _initializeStates(self):
 
-        X = np.arange(0, 100)
-        Y = np.arange(0, 100)
-        Z = np.arange(0, 100)
+        import cv2
+
+        dz, dx, dy = int(self.RNoyau*6)
+
+        X = np.arange(0, dx)
+        Y = np.arange(0, dy)
+        Z = np.arange(0, dz)
         X, Y, Z = np.meshgrid(X, Y, Z)
 
         df = pandas.DataFrame()
@@ -147,7 +154,7 @@ class spheroid:
 
         (z, x, y) = self.RNoyau
 
-        mask = np.sqrt((X-50)**2/x**2 + (Y-50)**2/y**2 + (Z-50)**2/z**2) < 1
+        mask = np.sqrt((X-dx/2)**2/x**2 + (Y-dy/2)**2/y**2 + (Z-dz/2)**2/z**2) < 1
         mask = np.transpose(mask, (2,1,0)).astype(np.int)
 
         GreenConv = scipy.signal.fftconvolve(self.GreenImage, mask, mode='full')

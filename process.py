@@ -60,13 +60,14 @@ def _saveSpheroid(sph, path):
 
 
 def _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
-    dCells, channels):
+    dCells, pxtoum, channels, pxtoum):
 
     print('prep image: ' + spheroidFolder + ' folder and time ' + timeFolder)
 
     filePath =  path + r'\\' + spheroidFolder + r'\\' + timeFolder
 
-    Sph = spheroid(filePath, spheroidFolder, timeFolder, zRatio, rNoyau, dCells)
+    Sph = spheroid(filePath, spheroidFolder, timeFolder, zRatio, rNoyau, dCells,
+                    pxtoum)
     # Initialize spheroid
 
     if len(channels) == 3: # Improve dependancy on channel number...
@@ -134,7 +135,7 @@ def _makeSpheroidClass(path, zRatio, rNoyau, dCells, channels):
                 if os.path.isdir(timePath):
 
                     _makeSingleSpheroidClass(path, spheroidFolder,
-                        timeFolder, zRatio, rNoyau, dCells, channels)
+                        timeFolder, zRatio, rNoyau, dCells, channels, pxtoum)
 
     return print('Spheroids made')
 
@@ -150,6 +151,6 @@ def _makeSphParrallel(path, key, zRatio, rNoyau, dCells, channels):
     _, spheroidFolder, timeFolder = spheroidFolder.split('\\')
 
     _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
-        dCells, channels)
+        dCells, channels, pxtoum)
 
     return print('Spheroids made')
