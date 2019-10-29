@@ -362,18 +362,18 @@ class spheroid:
 
                 if ((r/self.Pxtoum)**2 - (z -n)**2/self.ZRatio**2) > 0:
 
-                    rloc = np.sqrt((r/self.Pxtoum)**2 - (z -n)**2/self.ZRatio**2)
-                    s = np.linspace(0, 2*np.pi, 100)
-                    x = rloc*np.sin(s) + x
-                    y = rloc*np.cos(s) + y
+                    #rloc = np.sqrt((r/self.Pxtoum)**2 - (z -n)**2/self.ZRatio**2)
+                    #s = np.linspace(0, 2*np.pi, 100)
+                    #x = rloc*np.sin(s) + x
+                    #y = rloc*np.cos(s) + y
 
                     if self.Spheroid['cells'][cellLabel]['state'] == 'Green':
 
-                        plt.plot(y, x, 'g-')
+                        plt.plot(x, y, 'g')
 
                     elif self.Spheroid['cells'][cellLabel]['state'] == 'Orange':
 
-                        plt.plot(y, x, 'r-')
+                        plt.plot(x, y, 'r')
 
                     else: plt.plot(self.Spheroid['cells'][cellLabel]['y'],
                         self.Spheroid['cells'][cellLabel]['x'], 'r.')
