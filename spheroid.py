@@ -215,11 +215,19 @@ class spheroid:
 
                 if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] < 0:
 
-                    self.Spheroid['cells'][cellLabel]['state'] = 'Orange'
+                    self.Spheroid['cells'][cellLabel]['state GMM'] = 'Orange'
 
                 if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] > 0:
 
-                    self.Spheroid['cells'][cellLabel]['state'] = 'Green'
+                    self.Spheroid['cells'][cellLabel]['state GMM'] = 'Green'
+
+                if df.loc[df['label'] == cellLabel, 'Color'].iloc[0] < 0:
+
+                    self.Spheroid['cells'][cellLabel]['state linear'] = 'Orange'
+
+                if df.loc[df['label'] == cellLabel, 'Color'].iloc[0] > 0:
+
+                    self.Spheroid['cells'][cellLabel]['state linear'] = 'Green'
 
             except Exception as e: print('Error in cell ' + str(cellLabel), e)
 
@@ -277,9 +285,9 @@ class spheroid:
 
         # We choose the neighbours less than 2 cell distances away
         (a,b,c) = dCells
-        a *= 2/self.Pxtoum
-        b *= 2/self.Pxtoum
-        c *= 2/self.Pxtoum
+        a /= self.Pxtoum
+        b /= self.Pxtoum
+        c /= self.Pxtoum
 
         lf = df.loc[df['label'] != label].copy()
 
@@ -361,11 +369,11 @@ class spheroid:
                     #x = rloc*np.sin(s) + x
                     #y = rloc*np.cos(s) + y
 
-                    if self.Spheroid['cells'][cellLabel]['state'] == 'Green':
+                    if self.Spheroid['cells'][cellLabel]['state GMM'] == 'Green':
 
                         plt.plot(x, y, 'g')
 
-                    elif self.Spheroid['cells'][cellLabel]['state'] == 'Orange':
+                    elif self.Spheroid['cells'][cellLabel]['state GMM'] == 'Orange':
 
                         plt.plot(x, y, 'r')
 
