@@ -249,7 +249,7 @@ class spheroid:
         _Cells = {}
 
         df = self.NucFrame
-        rCells = self.RNoyau
+        dCells = self.dCells
         zRatio = self.ZRatio
 
         df['label'] = df['label'].astype(int).astype(str)
@@ -264,7 +264,7 @@ class spheroid:
             dic['y'] = str(df.loc[df['label'] == label, 'y'].iloc[0])
             dic['z'] = str(df.loc[df['label'] == label, 'z'].iloc[0])
             dic['neighbours'] = self._nearestNeighbour(df, label,
-                                        rCells, zRatio)
+                                        dCells, zRatio)
             dic['state'] = 'Live'
 
             _Cells[str(int(label))] = dic
