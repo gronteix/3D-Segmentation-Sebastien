@@ -211,25 +211,21 @@ class spheroid:
             # Error can come from thrown out cells from above that are non existent
             # here...
 
-            try:
+            if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] < 0:
 
-                if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] < 0:
+                self.Spheroid['cells'][cellLabel]['state GMM'] = 'Orange'
 
-                    self.Spheroid['cells'][cellLabel]['state GMM'] = 'Orange'
+            if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] > 0:
 
-                if df.loc[df['label'] == cellLabel, 'GMM Color'].iloc[0] > 0:
+                self.Spheroid['cells'][cellLabel]['state GMM'] = 'Green'
 
-                    self.Spheroid['cells'][cellLabel]['state GMM'] = 'Green'
+            if df.loc[df['label'] == cellLabel, 'Color'].iloc[0] < 0:
 
-                if df.loc[df['label'] == cellLabel, 'Color'].iloc[0] < 0:
+                self.Spheroid['cells'][cellLabel]['state linear'] = 'Orange'
 
-                    self.Spheroid['cells'][cellLabel]['state linear'] = 'Orange'
+            if df.loc[df['label'] == cellLabel, 'Color'].iloc[0] > 0:
 
-                if df.loc[df['label'] == cellLabel, 'Color'].iloc[0] > 0:
-
-                    self.Spheroid['cells'][cellLabel]['state linear'] = 'Green'
-
-            except Exception as e: print('Error in cell ' + str(cellLabel), e)
+                self.Spheroid['cells'][cellLabel]['state linear'] = 'Green'
 
         return df
 
