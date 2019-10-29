@@ -41,20 +41,18 @@ class spheroid:
 
     def __init__(self, path, position, time, zRatio, rNoyau, dCells, pxtoum):
 
-        position = '0'
-        time = '0'
-
         self.Path = path
         self.Position = position
         self.Time = time
         self.ZRatio = zRatio
-        self.RNoyau = rNoyau/pxtoum
-        self.DCells = dCells/pxtoum
+        self.RNoyau = rNoyau
+        self.DCells = dCells
         self.Pxtoum = pxtoum
+        self.CellNumber = 200
         self.NucImage = []
         self.NucFrame = pandas.DataFrame()
         self.BorderCrop = 0 # pixels cropped on border
-        self.MinMass = 120000 # to check for different images
+        self.MinMass = 50000 # to check for different images
         self.ThreshOrange = 300 # thresh for orange cell detection, not used since
                                 # classifier introduced.
         self.ThreshGreen = 200  # thresh for orange cell detection, not used
@@ -101,12 +99,34 @@ class spheroid:
         makes it impossible for any cell to be segmented twice along the z-axis.
         """
 
-        df = trackpy.locate(self.NucImage[:, :,:], self.RNoyau, minmass=self.MinMass, maxsize=None, separation=self.DCells,
-                            noise_size=2, smoothing_size=None, threshold=None, invert=False, percentile=64, topn=None,
-                            preprocess=True, max_iterations=10, filter_before=None, filter_after=None, characterize=True,
-                            engine='numba')
+        dz, dx, dy = self.RNoyau
 
-        df = df.loc[df['mass'] > 20000]
+        dX = 2*(int(dx/self.Pxtoum)//2)+1
+        dY = 2*(int(dy/self.Pxtoum)//2)+1
+        dZ = 2*(int(dz/self.Pxtoum)//2)+1
+
+        r = (dZ, dX, dY)
+
+        print(self.RNoyau)
+        print(r)
+
+        dz, dx, dy = self.DCells
+
+        dX = 2*(int(dx/self.Pxtoum)//2)+1
+        dY = 2*(int(dy/self.Pxtoum)//2)+1
+        dZ = 2*(int(dz/self.Pxtoum)//2)+1
+
+        d = (dZ, dX, dY)
+
+        print(self.DCells)
+        print(d)
+
+        df = trackpy.locate(self.NucImage[:,:,:], r, minmass=None, maxsize=None, separation=None, noise_size=1,
+                    smoothing_size=None, threshold=None, invert=False, percentile=64, topn=self.CellNumber,
+                    preprocess=True, max_iterations=10, filter_before=None, filter_after=None, characterize=True,
+                    engine='numba')
+
+        df = df.loc[df['mass'] > self.MinMass]
         df['label'] = range(len(df))
 
         self.NucFrame = df
@@ -142,20 +162,25 @@ class spheroid:
 
         import cv2
 
-        dz, dx, dy = int(self.RNoyau*6)
+        dz, dx, dy = self.RNoyau
 
-        X = np.arange(0, dx)
-        Y = np.arange(0, dy)
-        Z = np.arange(0, dz)
+        X = np.arange(0, int(dx*6/self.Pxtoum))
+        Y = np.arange(0, int(dy*6/self.Pxtoum))
+        Z = np.arange(0, int(dz*6/self.Pxtoum))
         X, Y, Z = np.meshgrid(X, Y, Z)
 
         df = pandas.DataFrame()
         i = 0
 
         (z, x, y) = self.RNoyau
+        z /= self.Pxtoum
+        x /= self.Pxtoum
+        y /= self.Pxtoum
 
         mask = np.sqrt((X-dx/2)**2/x**2 + (Y-dy/2)**2/y**2 + (Z-dz/2)**2/z**2) < 1
         mask = np.transpose(mask, (2,1,0)).astype(np.int)
+
+        import cv2
 
         GreenConv = scipy.signal.fftconvolve(self.GreenImage, mask, mode='full')
         OrangeConv = scipy.signal.fftconvolve(self.OrangeImage, mask, mode='full')
@@ -224,7 +249,7 @@ class spheroid:
         _Cells = {}
 
         df = self.NucFrame
-        dCells = self.DCells
+        rCells = self.RNoyau
         zRatio = self.ZRatio
 
         df['label'] = df['label'].astype(int).astype(str)
@@ -238,7 +263,8 @@ class spheroid:
             dic['x'] = str(df.loc[df['label'] == label, 'x'].iloc[0])
             dic['y'] = str(df.loc[df['label'] == label, 'y'].iloc[0])
             dic['z'] = str(df.loc[df['label'] == label, 'z'].iloc[0])
-            dic['neighbours'] = self._nearestNeighbour(df, label, dCells, zRatio)
+            dic['neighbours'] = self._nearestNeighbour(df, label,
+                                        rCells, zRatio)
             dic['state'] = 'Live'
 
             _Cells[str(int(label))] = dic
@@ -255,10 +281,11 @@ class spheroid:
         y = df.loc[df['label'] == label, 'y'].iloc[0]
         z = df.loc[df['label'] == label, 'z'].iloc[0]
 
+        # We choose the neighbours less than 2 cell distances away
         (a,b,c) = dCells
-        a *= 3
-        b *= 3
-        c *= 3
+        a *= 2/self.Pxtoum
+        b *= 2/self.Pxtoum
+        c *= 2/self.Pxtoum
 
         lf = df.loc[df['label'] != label].copy()
 
@@ -333,9 +360,9 @@ class spheroid:
                 y = int(float(self.Spheroid['cells'][cellLabel]['y']))
                 z = int(float(self.Spheroid['cells'][cellLabel]['z']))
 
-                if (r**2 - (z -n)**2/self.ZRatio**2) > 0:
+                if ((r/self.Pxtoum)**2 - (z -n)**2/self.ZRatio**2) > 0:
 
-                    rloc = np.sqrt(r**2 - (z -n)**2/self.ZRatio**2)
+                    rloc = np.sqrt((r/self.Pxtoum)**2 - (z -n)**2/self.ZRatio**2)
                     s = np.linspace(0, 2*np.pi, 100)
                     x = rloc*np.sin(s) + x
                     y = rloc*np.cos(s) + y
