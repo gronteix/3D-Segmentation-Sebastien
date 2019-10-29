@@ -52,7 +52,7 @@ class spheroid:
         self.NucImage = []
         self.NucFrame = pandas.DataFrame()
         self.BorderCrop = 0 # pixels cropped on border
-        self.MinMass = 50000 # to check for different images
+        self.MinMass = 40000 # to check for different images
         self.ThreshOrange = 300 # thresh for orange cell detection, not used since
                                 # classifier introduced.
         self.ThreshGreen = 200  # thresh for orange cell detection, not used
@@ -107,9 +107,6 @@ class spheroid:
 
         r = (dZ, dX, dY)
 
-        print(self.RNoyau)
-        print(r)
-
         dz, dx, dy = self.DCells
 
         dX = 2*(int(dx/self.Pxtoum)//2)+1
@@ -117,9 +114,6 @@ class spheroid:
         dZ = 2*(int(dz/self.Pxtoum)//2)+1
 
         d = (dZ, dX, dY)
-
-        print(self.DCells)
-        print(d)
 
         df = trackpy.locate(self.NucImage[:,:,:], r, minmass=None, maxsize=None, separation=None, noise_size=1,
                     smoothing_size=None, threshold=None, invert=False, percentile=64, topn=self.CellNumber,
@@ -249,7 +243,7 @@ class spheroid:
         _Cells = {}
 
         df = self.NucFrame
-        dCells = self.dCells
+        dCells = self.DCells
         zRatio = self.ZRatio
 
         df['label'] = df['label'].astype(int).astype(str)
