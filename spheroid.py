@@ -109,18 +109,16 @@ class spheroid:
 
         dz, dx, dy = self.DCells
 
-        dX = 2*(int(dx/self.Pxtoum)//2)+1
-        dY = 2*(int(dy/self.Pxtoum)//2)+1
-        dZ = 2*(int(dz/self.Pxtoum)//2)+1
-
-        d = (dZ, dX, dY)
-
         df = trackpy.locate(self.NucImage[:,:,:], r, minmass=None, maxsize=None, separation=None, noise_size=1,
                     smoothing_size=None, threshold=None, invert=False, percentile=64, topn=self.CellNumber,
                     preprocess=True, max_iterations=10, filter_before=None, filter_after=None, characterize=True,
                     engine='numba')
 
         df = df.loc[df['mass'] > self.MinMass]
+
+        df =df.loc[((df['x'] - df['x'].mean())**2 < 4*df['x'].std()**2) &
+          ((df['y'] - df['y'].mean())**2 < 4*df['y'].std()**2)]
+
         df['label'] = range(len(df))
 
         self.NucFrame = df
