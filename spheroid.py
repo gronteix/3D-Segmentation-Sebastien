@@ -152,33 +152,14 @@ class spheroid:
 
     def _initializeStates(self):
 
-        import cv2
-
         dz, dx, dy = self.RNoyau
 
-        X = np.arange(0, int(dx/self.Pxtoum))
-        Y = np.arange(0, int(dy/self.Pxtoum))
-        Z = np.arange(0, int(dz/self.Pxtoum))
-        X, Y, Z = np.meshgrid(X, Y, Z)
 
         df = pandas.DataFrame()
         i = 0
 
-        (z, x, y) = self.RNoyau
-        z /= self.Pxtoum
-        x /= self.Pxtoum
-        y /= self.Pxtoum
-
-        mask = np.sqrt((X-int(dx/self.Pxtoum)/2)**2/x**2 +
-            (Y-int(dy/self.Pxtoum)/2)**2/y**2 +
-            (Z-int(dz/self.Pxtoum)/2)**2/z**2) < 1
-
-        mask = np.transpose(mask, (2,1,0)).astype(np.int)
-
-        import cv2
-
-        GreenConv = scipy.signal.fftconvolve(self.GreenImage, mask, mode='full')
-        OrangeConv = scipy.signal.fftconvolve(self.OrangeImage, mask, mode='full')
+        GreenConv = gaussian_filter(self.GreenImage, sigma=4)
+        OrangeConv = gaussian_filter(self.OrangeImage, sigma = 4)
 
         for cellLabel in self.Spheroid['cells'].keys():
 
@@ -188,11 +169,9 @@ class spheroid:
                 y = int(float(self.Spheroid['cells'][cellLabel]['y']))
                 z = int(float(self.Spheroid['cells'][cellLabel]['z']))
 
-                zlen, _, _ = np.nonzero(mask)
-
                 df.loc[i, 'label'] = cellLabel
-                df.loc[i, 'Orange'] = OrangeConv[z,x,y]/len(zlen)
-                df.loc[i, 'Green'] = GreenConv[z,x,y]/len(zlen)
+                df.loc[i, 'Orange'] = OrangeConv[z,x,y]
+                df.loc[i, 'Green'] = GreenConv[z,x,y]
                 i += 1
 
             except Exception as e: print('Error in cell ' + str(cellLabel), e)
@@ -368,11 +347,11 @@ class spheroid:
 
                     if self.Spheroid['cells'][cellLabel]['state GMM'] == 'Green':
 
-                        plt.plot(x, y, 'g')
+                        plt.scatter(x, y, 'xg')
 
                     elif self.Spheroid['cells'][cellLabel]['state GMM'] == 'Orange':
 
-                        plt.plot(x, y, 'r')
+                        plt.scatter(x, y, 'xr')
 
                     else: plt.plot(self.Spheroid['cells'][cellLabel]['y'],
                         self.Spheroid['cells'][cellLabel]['x'], 'r.')

@@ -115,6 +115,8 @@ def _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
     _saveSpheroid(Sph.Spheroid, path + r'\\' + 'Spheroids' +
             '\\spheroid_' + spheroidFolder + r'_' +  timeFolder + '.json')
 
+    print('verif. sph.')
+
     Sph._verifySegmentation()
 
 def _makeSpheroidClass(path, zRatio, rNoyau, dCells, pxtoum, channels, minmass):
