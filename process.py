@@ -66,6 +66,9 @@ def _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
 
     filePath =  path + r'\\' + spheroidFolder + r'\\' + timeFolder
 
+    if not os.path.exists(path + r'\Spheroids'):
+            os.mkdir(path + r'\\' + 'Spheroids')
+
     Sph = spheroid(filePath, spheroidFolder, timeFolder, zRatio, rNoyau, dCells,
                     pxtoum, minmass)
     # Initialize spheroid
