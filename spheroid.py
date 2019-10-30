@@ -39,7 +39,7 @@ class spheroid:
     position: string object, well ID
     time: string object, time of experiment"""
 
-    def __init__(self, path, position, time, zRatio, rNoyau, dCells, pxtoum):
+    def __init__(self, path, position, time, zRatio, rNoyau, dCells, pxtoum, minmass):
 
         self.Path = path
         self.Position = position
@@ -52,7 +52,7 @@ class spheroid:
         self.NucImage = []
         self.NucFrame = pandas.DataFrame()
         self.BorderCrop = 0 # pixels cropped on border
-        self.MinMass = 40000 # to check for different images
+        self.MinMass = minmass # to check for different images
         self.ThreshOrange = 300 # thresh for orange cell detection, not used since
                                 # classifier introduced.
         self.ThreshGreen = 200  # thresh for orange cell detection, not used
@@ -158,9 +158,9 @@ class spheroid:
 
         dz, dx, dy = self.RNoyau
 
-        X = np.arange(0, int(dx*6/self.Pxtoum))
-        Y = np.arange(0, int(dy*6/self.Pxtoum))
-        Z = np.arange(0, int(dz*6/self.Pxtoum))
+        X = np.arange(0, int(dx/self.Pxtoum))
+        Y = np.arange(0, int(dy/self.Pxtoum))
+        Z = np.arange(0, int(dz/self.Pxtoum))
         X, Y, Z = np.meshgrid(X, Y, Z)
 
         df = pandas.DataFrame()
@@ -171,7 +171,10 @@ class spheroid:
         x /= self.Pxtoum
         y /= self.Pxtoum
 
-        mask = np.sqrt((X-dx/2)**2/x**2 + (Y-dy/2)**2/y**2 + (Z-dz/2)**2/z**2) < 1
+        mask = np.sqrt((X-int(dx/self.Pxtoum)/2)**2/x**2 +
+            (Y-int(dy/self.Pxtoum)/2)**2/y**2 +
+            (Z-int(dz/self.Pxtoum)/2)**2/z**2) < 1
+
         mask = np.transpose(mask, (2,1,0)).astype(np.int)
 
         import cv2
