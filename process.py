@@ -112,6 +112,9 @@ def _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
     if not os.path.exists(path + r'\\' + 'Spheroids'):
             os.mkdir(path + r'\\' + 'Spheroids')
 
+    print(path + r'\\' + 'Spheroids' +
+            '\\spheroid_' + spheroidFolder + r'_' +  timeFolder + '.json')
+
     _saveSpheroid(Sph.Spheroid, path + r'\\' + 'Spheroids' +
             '\\spheroid_' + spheroidFolder + r'_' +  timeFolder + '.json')
 

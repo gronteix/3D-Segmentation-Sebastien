@@ -99,17 +99,7 @@ class spheroid:
         makes it impossible for any cell to be segmented twice along the z-axis.
         """
 
-        dz, dx, dy = self.RNoyau
-
-        dX = 2*(int(dx/self.Pxtoum)//2)+1
-        dY = 2*(int(dy/self.Pxtoum)//2)+1
-        dZ = 2*(int(dz/self.Pxtoum)//2)+1
-
-        r = (dZ, dX, dY)
-
-        dz, dx, dy = self.DCells
-
-        df = trackpy.locate(self.NucImage[:,:,:], r, minmass=None, maxsize=None, separation=None, noise_size=1,
+        df = trackpy.locate(self.NucImage[:,:,:], self.RNoyau, minmass=None, maxsize=None, separation=None, noise_size=1,
                     smoothing_size=None, threshold=None, invert=False, percentile=64, topn=self.CellNumber,
                     preprocess=True, max_iterations=10, filter_before=None, filter_after=None, characterize=True,
                     engine='numba')
@@ -178,10 +168,19 @@ class spheroid:
 
         # We experimentally classify the cells spheroid by spheroid
 
-        a = df['Orange'].dot(df['Green'])/df['Orange'].dot(df['Orange'])
-        df['Color'] = np.sign(df['Green']-a*df['Orange'])
-
         X = df[['Orange', 'Green']]
+
+        from sklearn.preprocessing import StandardScaler
+
+        scaler = StandardScaler()
+        scaler.fit(X)
+        X = scaler.transform(X)
+
+        print(np.shape(X))
+
+        a =X[:,0].dot(X[:,1])/X[:,0].dot(X[:,0])
+        df['Color'] = np.sign(X[:,1]-a*X[1,0])
+
         gmm =  mixture.GaussianMixture(n_components=2).fit(X)
         labels = gmm.predict(X)
         df['GMM Color'] = labels*2-1
@@ -260,10 +259,7 @@ class spheroid:
         z = df.loc[df['label'] == label, 'z'].iloc[0]
 
         # We choose the neighbours less than 2 cell distances away
-        (a,b,c) = dCells
-        a /= self.Pxtoum
-        b /= self.Pxtoum
-        c /= self.Pxtoum
+        a,b,c = dCells
 
         lf = df.loc[df['label'] != label].copy()
 
@@ -345,16 +341,15 @@ class spheroid:
                     #x = rloc*np.sin(s) + x
                     #y = rloc*np.cos(s) + y
 
-                    if self.Spheroid['cells'][cellLabel]['state GMM'] == 'Green':
+                    if self.Spheroid['cells'][cellLabel]['state linear'] == 'Green':
 
-                        plt.scatter(x, y, 'xg')
+                        plt.plot(x, y, 'xg')
 
-                    elif self.Spheroid['cells'][cellLabel]['state GMM'] == 'Orange':
+                    elif self.Spheroid['cells'][cellLabel]['state linear'] == 'Orange':
 
-                        plt.scatter(x, y, 'xr')
+                        plt.plot(x, y, 'xr')
 
-                    else: plt.plot(self.Spheroid['cells'][cellLabel]['y'],
-                        self.Spheroid['cells'][cellLabel]['x'], 'r.')
+                    else: plt.plot(x, y, 'xr')
 
             plt.savefig(self.Path + r'/filmstack/im_' + str(n) +'.png')
             plt.close()
