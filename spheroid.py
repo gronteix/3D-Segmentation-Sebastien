@@ -142,14 +142,11 @@ class spheroid:
 
     def _initializeStates(self):
 
-        dz, dx, dy = self.RNoyau
-
-
         df = pandas.DataFrame()
         i = 0
 
-        GreenConv = gaussian_filter(self.GreenImage, sigma=4)
-        OrangeConv = gaussian_filter(self.OrangeImage, sigma = 4)
+        GreenConv = gaussian_filter(self.GreenImage, sigma=self.RNoyau)
+        OrangeConv = gaussian_filter(self.OrangeImage, sigma = self.RNoyau)
 
         for cellLabel in self.Spheroid['cells'].keys():
 
@@ -170,13 +167,13 @@ class spheroid:
 
         X = df[['Orange', 'Green']]
 
+
+        # Pre-processing of the fluorescence data values
         from sklearn.preprocessing import StandardScaler
 
         scaler = StandardScaler()
         scaler.fit(X)
         X = scaler.transform(X)
-
-        print(np.shape(X))
 
         a =X[:,0].dot(X[:,1])/X[:,0].dot(X[:,0])
         df['Color'] = np.sign(X[:,1]-a*X[1,0])
@@ -186,6 +183,12 @@ class spheroid:
         df['GMM Color'] = labels*2-1
 
         for cellLabel in self.Spheroid['cells'].keys():
+
+            self.Spheroid['cells'][cellLabel]['Intensity Orange'] =
+                df.loc[df['label'] == cellLabel, 'Orange'].iloc[0]
+
+            self.Spheroid['cells'][cellLabel]['Intensity Green'] =
+                df.loc[df['label'] == cellLabel, 'Green'].iloc[0]
 
             # Error can come from thrown out cells from above that are non existent
             # here...
