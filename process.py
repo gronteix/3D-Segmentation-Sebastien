@@ -20,35 +20,31 @@ def _sortFiles(path):
 
         if not os.path.isdir(path + r'\\' + file):
 
-            try:
+            fileName, ending = file.split('.')
 
-                fileName, ending = file.split('.')
+            if not 't' in fileName:
 
-                if not 't' in fileName:
+                _, position = fileName.split('xy')
+                position, _ = position.split('z')
 
-                    _, position = fileName.split('xy')
-                    position, _ = position.split('z')
+                time = '00'
 
-                    time = '00'
-
-                elif 't' in fileName:
-
-                    _, time = fileName.split('t')
-                    time, position = time.split('xy')
-                    position, z = position.split('z')
+            elif 't' in fileName:
 
 
-                if not os.path.exists(path + r'\\' + position):
-                    os.mkdir(path + r'\\' + position)
+                _, position = time.split('xy')
+                position, time = position.split('t')
+                time, z = time.split('z')
 
-                if not os.path.exists(path + r'\\' + position + r'\\' + time):
-                    os.mkdir(path + r'\\' + position + r'\\' + time)
 
-                os.rename(path + r'\\' + file, path + r'\\' + position + r'\\'
-                    + time + r'\\' + file)
+            if not os.path.exists(path + r'\\' + position):
+                os.mkdir(path + r'\\' + position)
 
-            except: print("check the file name structure")
+            if not os.path.exists(path + r'\\' + position + r'\\' + time):
+                os.mkdir(path + r'\\' + position + r'\\' + time)
 
+            os.rename(path + r'\\' + file, path + r'\\' + position + r'\\'
+                + time + r'\\' + file)
 
 def _saveSpheroid(sph, path):
 

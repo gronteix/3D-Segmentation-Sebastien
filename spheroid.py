@@ -184,11 +184,9 @@ class spheroid:
 
         for cellLabel in self.Spheroid['cells'].keys():
 
-            self.Spheroid['cells'][cellLabel]['Intensity Orange'] =
-                df.loc[df['label'] == cellLabel, 'Orange'].iloc[0]
+            self.Spheroid['cells'][cellLabel]['Intensity Orange'] = df.loc[df['label'] == cellLabel, 'Orange'].iloc[0]
 
-            self.Spheroid['cells'][cellLabel]['Intensity Green'] =
-                df.loc[df['label'] == cellLabel, 'Green'].iloc[0]
+            self.Spheroid['cells'][cellLabel]['Intensity Green'] = df.loc[df['label'] == cellLabel, 'Green'].iloc[0]
 
             # Error can come from thrown out cells from above that are non existent
             # here...
