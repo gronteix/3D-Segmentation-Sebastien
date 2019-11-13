@@ -48,7 +48,7 @@ class spheroid:
         self.RNoyau = rNoyau
         self.DCells = dCells
         self.Pxtoum = pxtoum
-        self.CellNumber = 200
+        self.CellNumber = 400
         self.NucImage = []
         self.NucFrame = pandas.DataFrame()
         self.BorderCrop = 0 # pixels cropped on border

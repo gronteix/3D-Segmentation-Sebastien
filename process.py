@@ -32,7 +32,7 @@ def _sortFiles(path):
             elif 't' in fileName:
 
 
-                _, position = time.split('xy')
+                _, position = fileName.split('xy')
                 position, time = position.split('t')
                 time, z = time.split('z')
 
