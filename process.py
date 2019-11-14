@@ -60,7 +60,7 @@ def _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
 
     print('prep image: ' + spheroidFolder + ' folder and time ' + timeFolder)
 
-    filePath =  path + r'\\' + spheroidFolder + r'\\' + timeFolder
+    filePath =  path + r'\\' + spheroidFolder + r'\\' + timeFolder + r'\\cropStack' 
 
     if not os.path.exists(path + r'\Spheroids'):
             os.mkdir(path + r'\\' + 'Spheroids')
@@ -138,8 +138,12 @@ def _makeSpheroidClass(path, zRatio, rNoyau, dCells, pxtoum, channels, minmass):
 
                 if os.path.isdir(timePath):
 
-                    _makeSingleSpheroidClass(path, spheroidFolder,
-                        timeFolder, zRatio, rNoyau, dCells, pxtoum, channels, minmass)
+                    try:
+
+                        _makeSingleSpheroidClass(path, spheroidFolder,
+                            timeFolder, zRatio, rNoyau, dCells, pxtoum, channels, minmass)
+
+                    except Exception as e: print(e)
 
     return print('Spheroids made')
 
