@@ -60,10 +60,10 @@ def _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
 
     print('prep image: ' + spheroidFolder + ' folder and time ' + timeFolder)
 
-    filePath =  path + r'\\' + spheroidFolder + r'\\' + timeFolder + r'\\cropStack' 
+    filePath =  os.path.join(path,spheroidFolder,timeFolder,'cropped')
 
-    if not os.path.exists(path + r'\Spheroids'):
-            os.mkdir(path + r'\\' + 'Spheroids')
+    if not os.path.exists(os.path.join(path,'Spheroids')):
+            os.mkdir(os.path.join(path,'Spheroids'))
 
     Sph = spheroid(filePath, spheroidFolder, timeFolder, zRatio, rNoyau, dCells,
                     pxtoum, minmass)

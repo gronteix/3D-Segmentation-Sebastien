@@ -311,7 +311,7 @@ class spheroid:
 
         zshape, _, _ = np.shape(self.NucImage)
 
-        img_eq = exposure.equalize_hist(self.NucImage)
+        img_eq = exposure.equalize_hist(self.OrangeImage)
         ImageAll =  gaussian_filter(img_eq, sigma=2)
 
         for n in range(zshape):
@@ -342,11 +342,11 @@ class spheroid:
                     #x = rloc*np.sin(s) + x
                     #y = rloc*np.cos(s) + y
 
-                    if self.Spheroid['cells'][cellLabel]['state linear'] == 'Green':
+                    if self.Spheroid['cells'][cellLabel]['state GMM'] == 'Green':
 
                         plt.plot(x, y, 'xg')
 
-                    elif self.Spheroid['cells'][cellLabel]['state linear'] == 'Orange':
+                    elif self.Spheroid['cells'][cellLabel]['state GMM'] == 'Orange':
 
                         plt.plot(x, y, 'xr')
 
