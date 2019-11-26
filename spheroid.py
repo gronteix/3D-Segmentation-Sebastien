@@ -48,11 +48,11 @@ class spheroid:
         self.RNoyau = rNoyau
         self.DCells = dCells
         self.Pxtoum = pxtoum
-        self.CellNumber = 400
+        self.CellNumber = 300
         self.NucImage = []
         self.NucFrame = pandas.DataFrame()
         self.BorderCrop = 0 # pixels cropped on border
-        self.MinMass = minmass # to check for different images
+        self.MinMass = 600000 # to check for different images
         self.ThreshOrange = 300 # thresh for orange cell detection, not used since
                                 # classifier introduced.
         self.ThreshGreen = 200  # thresh for orange cell detection, not used
@@ -99,7 +99,7 @@ class spheroid:
         makes it impossible for any cell to be segmented twice along the z-axis.
         """
 
-        df = trackpy.locate(self.NucImage[:,:,:], self.RNoyau, minmass=None, maxsize=None, separation=None, noise_size=1,
+        df = trackpy.locate(self.NucImage[:,:,:], self.RNoyau, minmass=self.MinMass, maxsize=None, separation=self.RNoyau, noise_size=1,
                     smoothing_size=None, threshold=None, invert=False, percentile=64, topn=self.CellNumber,
                     preprocess=True, max_iterations=10, filter_before=None, filter_after=None, characterize=True,
                     engine='numba')
