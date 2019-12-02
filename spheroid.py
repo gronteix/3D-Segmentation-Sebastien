@@ -52,7 +52,7 @@ class spheroid:
         self.NucImage = []
         self.NucFrame = pandas.DataFrame()
         self.BorderCrop = 0 # pixels cropped on border
-        self.MinMass = 600000 # to check for different images
+        self.MinMass = 200000 # to check for different images
         self.ThreshOrange = 300 # thresh for orange cell detection, not used since
                                 # classifier introduced.
         self.ThreshGreen = 200  # thresh for orange cell detection, not used
@@ -178,6 +178,8 @@ class spheroid:
         a =X[:,0].dot(X[:,1])/X[:,0].dot(X[:,0])
         df['Color'] = np.sign(X[:,1]-a*X[1,0])
 
+
+        X = df[['Orange']]
         gmm =  mixture.GaussianMixture(n_components=2).fit(X)
         labels = gmm.predict(X)
         df['GMM Color'] = labels*2-1
@@ -311,16 +313,18 @@ class spheroid:
 
         zshape, _, _ = np.shape(self.NucImage)
 
-        img_eq = exposure.equalize_hist(self.OrangeImage)
+        img_eq = exposure.equalize_hist(self.NucImage)
         ImageAll =  gaussian_filter(img_eq, sigma=2)
 
         for n in range(zshape):
 
             Image = ImageAll[n]
+            ImgageOrange = self.OrangeImage
 
             plt.figure(figsize=(12, 12))
             plt.subplot(111)
             plt.imshow(Image, cmap=plt.cm.gray)
+            plt.imshow(ImgageOrange, cmap=plt.cm.gist_heat, alpha = 0.5)
             plt.axis('off')
 
             #scalebar = ScaleBar(0.0000003, location = 'lower right')

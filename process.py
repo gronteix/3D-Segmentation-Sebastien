@@ -116,7 +116,7 @@ def _makeSingleSpheroidClass(path, spheroidFolder, timeFolder, zRatio, rNoyau,
 
     print('verif. sph.')
 
-    Sph._verifySegmentation()
+    #Sph._verifySegmentation()
 
 def _makeSpheroidClass(path, zRatio, rNoyau, dCells, pxtoum, channels, minmass):
 
